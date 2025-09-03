@@ -12,7 +12,6 @@ namespace RevitGen.Generator
     /// </summary>
     internal static class SourceGenerationHelper
     {
-        // 定义我们属性的完整名称，以使用最终确定的、正确的命名方案。
         private const string RevitCommandAttributeFullName = "RevitGen.Attributes.RevitCommandAttribute";
         private const string CommandHandlerAttributeFullName = "RevitGen.Attributes.CommandHandlerAttribute";
 

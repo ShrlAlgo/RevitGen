@@ -17,24 +17,24 @@ namespace RevitGen.Generator
         public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
         {
             // 检查节点是否是一个类声明，并且它带有属性
-            //if (syntaxNode is ClassDeclarationSyntax classDeclarationSyntax &&
-            //    classDeclarationSyntax.AttributeLists.Count > 0)
-            //{
-            //    // 检查类是否被声明为 partial
-            //    foreach (var modifier in classDeclarationSyntax.Modifiers)
-            //    {
-            //        if (modifier.ValueText == "partial")
-            //        {
-            //            CandidateClasses.Add(classDeclarationSyntax);
-            //            break;
-            //        }
-            //    }
-            //}
             if (syntaxNode is ClassDeclarationSyntax classDeclarationSyntax &&
-               classDeclarationSyntax.AttributeLists.Count > 0)
+                classDeclarationSyntax.AttributeLists.Count > 0)
             {
-                CandidateClasses.Add(classDeclarationSyntax);
+                // 检查类是否被声明为 partial
+                foreach (var modifier in classDeclarationSyntax.Modifiers)
+                {
+                    if (modifier.ValueText == "partial")
+                    {
+                        CandidateClasses.Add(classDeclarationSyntax);
+                        break;
+                    }
+                }
             }
+            //if (syntaxNode is ClassDeclarationSyntax classDeclarationSyntax &&
+            //   classDeclarationSyntax.AttributeLists.Count > 0)
+            //{
+            //    CandidateClasses.Add(classDeclarationSyntax);
+            //}
         }
     }
 }

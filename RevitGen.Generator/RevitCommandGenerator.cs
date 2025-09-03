@@ -10,7 +10,6 @@ namespace RevitGen.Generator
     [Generator(LanguageNames.CSharp)]
     public class RevitCommandGenerator : ISourceGenerator
     {
-        // ★★ 1. 修正常量，使用 RevitCommandAttribute ★★
         private const string RevitCommandAttributeFullName = "RevitGen.Attributes.RevitCommandAttribute";
         private const string CommandHandlerAttributeFullName = "RevitGen.Attributes.CommandHandlerAttribute";
 
@@ -27,18 +26,15 @@ namespace RevitGen.Generator
 
             if (!(context.SyntaxReceiver is SyntaxReceiver receiver))
             {
-                // ... [日志和返回逻辑不变] ...
                 return;
             }
 
             log.AppendLine($"// Candidate classes found by SyntaxReceiver: {receiver.CandidateClasses.Count}");
             if (receiver.CandidateClasses.Count == 0)
             {
-                // ... [日志和返回逻辑不变] ...
                 return;
             }
 
-            // ★★ 2. 确保我们查找的是正确的特性符号 ★★
             var attributeSymbol = context.Compilation.GetTypeByMetadataName(RevitCommandAttributeFullName);
             if (attributeSymbol == null)
             {
@@ -80,7 +76,6 @@ namespace RevitGen.Generator
 
             if (commandClasses.Any())
             {
-                // ... [生成 partial 类和 App 类的逻辑不变] ...
                 foreach (var classSymbol in commandClasses)
                 {
                     var partialClassSource = SourceGenerationHelper.GenerateCommandPartialClass(classSymbol);
