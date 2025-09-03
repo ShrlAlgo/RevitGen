@@ -1,6 +1,7 @@
 右键RevitGen项目，打包，生成nuget，可以修改版本。
 在插件项目去引用nuget包，本地路径可能需要修改nuget.config中的相对路径。
 使用RevitCommand生成命令和面板，CommandHandler来定义运行的逻辑方法
+如果是路径的图标的话，需要属性窗口中把生成方式改成嵌入式资源
 ```
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
