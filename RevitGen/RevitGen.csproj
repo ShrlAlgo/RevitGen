@@ -4,8 +4,11 @@
     <!-- 包信息 -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>RevitGen</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>ShrlAlgo</Authors>
+    <PackageProjectUrl>https://www.shrlalgo.cn/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ShrlAlgo/RevitGen</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>A powerful source generator to accelerate Revit add-in development.</Description>
@@ -24,8 +27,11 @@
     
     <!-- 2. 将 Generator.dll 打包到 analyzers/ 目录 -->
     <None Include="..\RevitGen.Generator\bin\$(Configuration)\netstandard2.0\RevitGen.Generator.dll" Pack="true" PackagePath="analyzers\dotnet\cs" />
-    <None Include="..\README.md" Pack="true" PackagePath="\"/>
-    <None Include="..\LICENSE" Pack="true" PackagePath="\"/>
+    
+    <None Include="build\RevitGen.targets" Pack="true" PackagePath="build" />
+    <!-- 3. 将新创建的 .targets 文件打包到 build/ 目录 -->
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\LICENSE" Pack="true" PackagePath="\" />
     <!-- 
       我们仍然保留 ProjectReference，但它的作用变了：
       它不再负责打包，而是只负责【确保正确的编译顺序】。
@@ -33,6 +39,11 @@
     -->
     <ProjectReference Include="..\RevitGen.Common\RevitGen.Common.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\RevitGen.Generator\RevitGen.Generator.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+    <Folder Include="build\" />
   </ItemGroup>
 
 </Project>
