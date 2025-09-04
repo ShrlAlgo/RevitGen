@@ -4,7 +4,7 @@
     <!-- 包信息 -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>RevitGen</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>ShrlAlgo</Authors>
     <PackageProjectUrl>https://www.shrlalgo.cn/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ShrlAlgo/RevitGen</RepositoryUrl>
@@ -23,12 +23,11 @@
 
   <ItemGroup>
     <!-- 1. 将 Common.dll 打包到 lib/ 目录 -->
-    <None Include="..\RevitGen.Common\bin\$(Configuration)\netstandard2.0\RevitGen.Common.dll" Pack="true" PackagePath="lib\netstandard2.0" />
+    <None Include="..\RevitGen.Common\bin\$(Configuration)\netstandard2.0\RevitGen.Common.dll" Pack="true" PackagePath="ref\netstandard2.0" />
     
     <!-- 2. 将 Generator.dll 打包到 analyzers/ 目录 -->
     <None Include="..\RevitGen.Generator\bin\$(Configuration)\netstandard2.0\RevitGen.Generator.dll" Pack="true" PackagePath="analyzers\dotnet\cs" />
     
-    <None Include="build\RevitGen.targets" Pack="true" PackagePath="build" />
     <!-- 3. 将新创建的 .targets 文件打包到 build/ 目录 -->
     <None Include="..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\LICENSE" Pack="true" PackagePath="\" />
@@ -43,7 +42,6 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
-    <Folder Include="build\" />
   </ItemGroup>
 
 </Project>

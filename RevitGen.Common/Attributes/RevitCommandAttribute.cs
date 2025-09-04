@@ -1,8 +1,4 @@
-﻿// RevitGen.Common/Attributes/RevitCommandAttribute.cs
-
-using System;
-
-using Autodesk.Revit.Attributes;
+﻿using System;
 
 namespace RevitGen.Attributes
 {
@@ -36,11 +32,6 @@ namespace RevitGen.Attributes
         public string ToolTip { get; set; } = "";
 
         /// <summary>
-        /// 命令的事务模式。生成器将根据此模式自动处理事务。
-        /// </summary>
-        public TransactionMode TransactionMode { get; set; } = TransactionMode.Manual;
-
-        /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="text">按钮上显示的文本。</param>
@@ -52,5 +43,7 @@ namespace RevitGen.Attributes
             }
             Text = text;
         }
+        public bool UsingTransaction { get; set; }
+
     }
 }
