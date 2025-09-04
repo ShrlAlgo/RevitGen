@@ -1,15 +1,15 @@
 # 注意事项
- - 使用该包的项目的源生成器，需要使用新的.Net SDK 样式，如果不是，可以在```https://marketplace.visualstudio.com/vs```或者扩展-管理扩展，搜索.NET Upgrade Assistant安装
-- 之后项目右键升级到SDK（选最后一项 将项目转换为SDK样式）。
+ - 使用该包的项目的源生成器，需要使用新的.Net SDK 样式，如果不是，可以在```https://marketplace.visualstudio.com/vs```或者visual studio菜单-扩展-管理扩展，搜索.NET Upgrade Assistant安装
+- 之后在项目鼠标右键-升级（选最后一项 将项目转换为SDK样式）。
 ﻿- 右键RevitGen项目，打包，生成nuget，可以修改版本。
 - 在插件项目本地去引用nuget包，本地路径需要修改nuget.config中的相对路径。
 # 使用方法
 - 使用```partial```修饰你的命令类
-- 使用```RevitCommand```生成命令和面板
-- ```CommandHandler```来定义运行的逻辑方法
-- 如果是路径的图标的话，需要属性窗口中把生成方式改成嵌入式资源
-- 命令自带```UIApplication```,```UIDocument```,```Document```,```ActiveView```等属性
+- 使用```RevitCommand```生成外部命令和面板
+- ```Icon```如果是路径的图标的话，需要属性窗口中把生成方式改成嵌入式资源
 - 自带事务处理，不需要使用默认事务时，可以使用```[RevitCommand("测试", UsingTransaction = false)]```
+- 使用```CommandHandler```来定义运行的逻辑方法
+- 命令自带```UIApplication```,```UIDocument```,```Document```,```ActiveView```等属性
 - 源生成器会根据命令的特性会生成一个的按钮，并在```RevitGenApplication```自动注册。
 ```
 using Autodesk.Revit.DB;
