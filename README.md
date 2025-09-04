@@ -1,3 +1,4 @@
+﻿- 使用该包的项目，需要使用新的.Net SDK 样式，如果不是，可以在```https://marketplace.visualstudio.com/vs```搜索.NET Upgrade Assistant，之后项目右键升级到SDK（选最后一项 将项目转换为SDK样式）。
 ﻿- 右键RevitGen项目，打包，生成nuget，可以修改版本。
 - 在插件项目去引用nuget包，本地路径需要修改nuget.config中的相对路径。
 - 使用```partial```修饰你的命令类
