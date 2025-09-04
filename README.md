@@ -5,7 +5,7 @@
 - CommandHandler来定义运行的逻辑方法
 - 如果是路径的图标的话，需要属性窗口中把生成方式改成嵌入式资源
 - 命令自带UIApplication,UIDocument,Document,ActiveView等属性
-- 自带事务处理
+- 自带事务处理，不需要使用默认事务时，可以使用[RevitCommand("测试", UsingTransaction = false)]
 - 命令的特性会生成一个RevitGenApplication的类，注册命令，生成面板。
 ```
 using Autodesk.Revit.DB;
