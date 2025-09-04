@@ -6,6 +6,8 @@
     <PackageId>RevitGen</PackageId>
     <Version>1.0.0</Version>
     <Authors>ShrlAlgo</Authors>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>A powerful source generator to accelerate Revit add-in development.</Description>
     <PackageTags>Revit;SourceGenerator;CodeGen</PackageTags>
     
@@ -22,7 +24,8 @@
     
     <!-- 2. 将 Generator.dll 打包到 analyzers/ 目录 -->
     <None Include="..\RevitGen.Generator\bin\$(Configuration)\netstandard2.0\RevitGen.Generator.dll" Pack="true" PackagePath="analyzers\dotnet\cs" />
-
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="..\LICENSE" Pack="true" PackagePath="\"/>
     <!-- 
       我们仍然保留 ProjectReference，但它的作用变了：
       它不再负责打包，而是只负责【确保正确的编译顺序】。
