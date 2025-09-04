@@ -4,7 +4,7 @@
     <!-- 包信息 -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>RevitGen</PackageId>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Authors>ShrlAlgo</Authors>
     <PackageProjectUrl>https://www.shrlalgo.cn/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ShrlAlgo/RevitGen</RepositoryUrl>
@@ -23,19 +23,17 @@
 
   <ItemGroup>
     <!-- 1. 将 Common.dll 打包到 lib/ 目录 -->
-    <None Include="..\RevitGen.Common\bin\$(Configuration)\netstandard2.0\RevitGen.Common.dll" Pack="true" PackagePath="ref\netstandard2.0" />
+    <None Include="..\RevitGen.Common\bin\$(Configuration)\netstandard2.0\RevitGen.Common.dll" Pack="true" PackagePath="lib\netstandard2.0" />
     
     <!-- 2. 将 Generator.dll 打包到 analyzers/ 目录 -->
     <None Include="..\RevitGen.Generator\bin\$(Configuration)\netstandard2.0\RevitGen.Generator.dll" Pack="true" PackagePath="analyzers\dotnet\cs" />
     
     <!-- 3. 将新创建的 .targets 文件打包到 build/ 目录 -->
+    <None Include="build\RevitGen.targets" Pack="true" PackagePath="build" />
+
     <None Include="..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\LICENSE" Pack="true" PackagePath="\" />
-    <!-- 
-      我们仍然保留 ProjectReference，但它的作用变了：
-      它不再负责打包，而是只负责【确保正确的编译顺序】。
-      `ReferenceOutputAssembly="false"` 可以防止循环依赖。
-    -->
+
     <ProjectReference Include="..\RevitGen.Common\RevitGen.Common.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\RevitGen.Generator\RevitGen.Generator.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
