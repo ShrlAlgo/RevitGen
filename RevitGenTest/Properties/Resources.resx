@@ -124,4 +124,13 @@
   <data name="CodeList_32px" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CodeList_32px.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="NoWallsFound" xml:space="preserve">
+    <value>项目中没有找到任何墙。</value>
+  </data>
+  <data name="SuccessTitle" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="FoundWallsMessage" xml:space="preserve">
+    <value>找到了 {0} 面墙。</value>
+  </data>
 </root>

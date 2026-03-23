@@ -79,5 +79,32 @@ namespace RevitGenTest.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+
+        /// <summary>
+        ///   查找类似 项目中没有找到任何墙。 的本地化字符串。
+        /// </summary>
+        internal static string NoWallsFound {
+            get {
+                return ResourceManager.GetString("NoWallsFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 成功 的本地化字符串。
+        /// </summary>
+        internal static string SuccessTitle {
+            get {
+                return ResourceManager.GetString("SuccessTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 找到了 {0} 面墙。 的本地化字符串。
+        /// </summary>
+        internal static string FoundWallsMessage {
+            get {
+                return ResourceManager.GetString("FoundWallsMessage", resourceCulture);
+            }
+        }
     }
 }
