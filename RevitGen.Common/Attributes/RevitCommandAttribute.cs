@@ -43,7 +43,7 @@ namespace RevitGen.Attributes
             }
             Text = text;
         }
-        public bool UsingTransaction { get; set; }
+        public bool UsingTransaction { get; set; } = true;
 
     }
 }
