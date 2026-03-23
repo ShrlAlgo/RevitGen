@@ -29,5 +29,13 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.en.resx">
+      <ManifestResourceName>RevitGenTest.Properties.Resources</ManifestResourceName>
+      <Culture>en</Culture>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.ja.resx">
+      <ManifestResourceName>RevitGenTest.Properties.Resources</ManifestResourceName>
+      <Culture>ja</Culture>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

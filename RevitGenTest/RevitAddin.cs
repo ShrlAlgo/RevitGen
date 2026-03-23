@@ -21,12 +21,12 @@ namespace RevitGenTest
             if (walls.Count == 0)
             {
                 // 如果出现问题，只需设置属性即可
-                this.ErrorMessage = "项目中没有找到任何墙。";
+                this.ErrorMessage = Properties.Resources.NoWallsFound;
                 this.Result = Result.Failed;
                 return; // 提前返回
             }
 
-            TaskDialog.Show("成功", $"找到了 {walls.Count} 面墙。");
+            TaskDialog.Show(Properties.Resources.SuccessTitle, string.Format(Properties.Resources.FoundWallsMessage, walls.Count));
         }
     }
     [RevitCommand("我的第一个命令", ToolTip = "这是一个自动生成的酷炫命令！", PanelName = "核心功能", Icon = "Resources/CodeList_32px.png")]
@@ -43,12 +43,12 @@ namespace RevitGenTest
             if (walls.Count == 0)
             {
                 // 如果出现问题，只需设置属性即可
-                this.ErrorMessage = "项目中没有找到任何墙。";
+                this.ErrorMessage = Properties.Resources.NoWallsFound;
                 this.Result = Result.Failed;
                 return; // 提前返回
             }
 
-            TaskDialog.Show("成功", $"找到了 {walls.Count} 面墙。");
+            TaskDialog.Show(Properties.Resources.SuccessTitle, string.Format(Properties.Resources.FoundWallsMessage, walls.Count));
         }
     }
 }
