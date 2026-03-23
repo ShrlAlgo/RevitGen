@@ -26,6 +26,8 @@ namespace RevitGen.Generator
 
             if (!(context.SyntaxReceiver is SyntaxReceiver receiver))
             {
+                log.AppendLine("// WARNING: SyntaxReceiver is null or of unexpected type. Aborting.");
+                AddSource(context, "RevitGen_Debug_Log.g.cs", log.ToString());
                 return;
             }
 
@@ -44,6 +46,16 @@ namespace RevitGen.Generator
             }
             log.AppendLine($"// Successfully found attribute symbol: {attributeSymbol.Name}");
 
+            var handlerAttributeSymbol = context.Compilation.GetTypeByMetadataName(CommandHandlerAttributeFullName);
+            if (handlerAttributeSymbol == null)
+            {
+                log.AppendLine($"// WARNING: Could not find attribute symbol: {CommandHandlerAttributeFullName}. Handler methods will not be validated at the semantic level.");
+            }
+            else
+            {
+                log.AppendLine($"// Successfully found attribute symbol: {handlerAttributeSymbol.Name}");
+            }
+
             var commandClasses = new List<INamedTypeSymbol>();
             foreach (var candidateClass in receiver.CandidateClasses)
             {
@@ -57,7 +69,6 @@ namespace RevitGen.Generator
                     continue;
                 }
 
-                // ★★ 3. 检查是否应用了正确的 [RevitCommand] 特性 ★★
                 bool hasAttribute = classSymbol.GetAttributes().Any(ad =>
                     ad.AttributeClass?.Equals(attributeSymbol, SymbolEqualityComparer.Default) ?? false);
 
@@ -80,10 +91,12 @@ namespace RevitGen.Generator
                 {
                     var partialClassSource = SourceGenerationHelper.GenerateCommandPartialClass(classSymbol);
                     AddSource(context, $"{classSymbol.Name}.g.cs", partialClassSource);
+                    log.AppendLine($"// Generated: {classSymbol.Name}.g.cs");
                 }
 
                 var appSource = SourceGenerationHelper.GenerateApplicationClass(commandClasses);
                 AddSource(context, "RevitGenApplication.g.cs", appSource);
+                log.AppendLine("// Generated: RevitGenApplication.g.cs");
             }
 
             AddSource(context, "RevitGen_Debug_Log.g.cs", log.ToString());
