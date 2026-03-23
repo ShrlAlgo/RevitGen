@@ -413,5 +413,146 @@ namespace MyAddin
             Assert.Contains("CreateRibbonTab", content);
             Assert.Contains("CreateRibbonPanel", content);
         }
+
+        // ── Dynamic compilation validation ────────────────────────────────────
+
+        /// <summary>
+        /// Minimal stubs for the Revit API types referenced by the generated command
+        /// partial class.  These provide enough type information for the C# compiler to
+        /// resolve all symbols; they are never executed at runtime.
+        /// </summary>
+        private const string RevitApiStubs = @"
+namespace Autodesk.Revit.DB
+{
+    public class Document { }
+    public class View { }
+    public class ElementSet { }
+    public class Transaction : System.IDisposable
+    {
+        public Transaction(Document doc, string name) { }
+        public void Start() { }
+        public void Commit() { }
+        public void RollBack() { }
+        public void Dispose() { }
+    }
+}
+namespace Autodesk.Revit.UI
+{
+    public enum Result { Succeeded, Cancelled, Failed }
+    public class UIDocument
+    {
+        public Autodesk.Revit.DB.Document Document => new Autodesk.Revit.DB.Document();
+        public Autodesk.Revit.DB.View ActiveView => null;
+    }
+    public class UIApplication { public UIDocument ActiveUIDocument => new UIDocument(); }
+    public class ExternalCommandData { public UIApplication Application => new UIApplication(); }
+    public interface IExternalCommand
+    {
+        Result Execute(ExternalCommandData commandData, ref string message, Autodesk.Revit.DB.ElementSet elements);
+    }
+}
+namespace Autodesk.Revit.Attributes
+{
+    public enum TransactionMode { Manual, Automatic }
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public sealed class TransactionAttribute : System.Attribute
+    {
+        public TransactionAttribute(TransactionMode mode) { }
+    }
+}";
+
+        /// <summary>
+        /// Compiles the supplied source trees together and returns the list of
+        /// <see cref="Diagnostic"/> instances with severity Error or higher.
+        /// </summary>
+        private static IReadOnlyList<Diagnostic> CompileSources(params string[] sources)
+        {
+            var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp9);
+
+            var trees = sources
+                .Select(s => CSharpSyntaxTree.ParseText(s, parseOptions))
+                .ToArray();
+
+            var compilation = CSharpCompilation.Create(
+                assemblyName: "DynamicValidationAssembly",
+                syntaxTrees: trees,
+                references: new[]
+                {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location)
+                },
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            return compilation.GetDiagnostics()
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .ToList();
+        }
+
+        [Fact]
+        public void GeneratedPartialClass_CompilesWithoutErrors_WhenCombinedWithUserClassAndStubs()
+        {
+            // Arrange – run the generator to obtain the generated command partial class.
+            var userSource = @"
+using RevitGen.Attributes;
+namespace MyAddin
+{
+    [RevitCommand(""Test"")]
+    public partial class MyCmd
+    {
+        [CommandHandler]
+        private void Run() { }
+    }
+}";
+            var files = RunGenerator(userSource);
+            var generatedPartialClass = files["MyCmd.g.cs"];
+
+            // The user-side partial class (without the generator attribute declarations,
+            // since those were already resolved during generation).
+            var userPartialClass = @"
+namespace MyAddin
+{
+    public partial class MyCmd
+    {
+        private void Run() { }
+    }
+}";
+
+            // Act – compile generated code + user partial class + Revit API stubs.
+            var errors = CompileSources(generatedPartialClass, userPartialClass, RevitApiStubs);
+
+            // Assert – no compilation errors.
+            Assert.Empty(errors);
+        }
+
+        [Fact]
+        public void GeneratedPartialClass_WithoutTransaction_CompilesWithoutErrors()
+        {
+            var userSource = @"
+using RevitGen.Attributes;
+namespace MyAddin
+{
+    [RevitCommand(""Test"", UsingTransaction = false)]
+    public partial class MyCmd
+    {
+        [CommandHandler]
+        private void Run() { }
+    }
+}";
+            var files = RunGenerator(userSource);
+            var generatedPartialClass = files["MyCmd.g.cs"];
+
+            var userPartialClass = @"
+namespace MyAddin
+{
+    public partial class MyCmd
+    {
+        private void Run() { }
+    }
+}";
+
+            var errors = CompileSources(generatedPartialClass, userPartialClass, RevitApiStubs);
+
+            Assert.Empty(errors);
+        }
     }
 }

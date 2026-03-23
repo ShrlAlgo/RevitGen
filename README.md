@@ -154,6 +154,27 @@ dotnet test RevitGen.Tests/RevitGen.Tests.csproj
 
 ---
 
+## FAQ
+
+**Q: Why don't I see any generated files in my project?**  
+A: Make sure your class is declared `partial` and is decorated with `[RevitCommand(...)]`. The generator only processes `partial` classes. Also verify that `RevitGen.Common` and `RevitGen.Generator` are both referenced (the NuGet package handles this automatically).
+
+**Q: Can I use RevitGen with a non-SDK-style project (.csproj)?**  
+A: Source generators require the SDK-style project format. Use the **.NET Upgrade Assistant** Visual Studio extension to convert your project (right-click → **Upgrade** → *Convert project to SDK style*).
+
+**Q: My command runs but no Ribbon button appears. What should I check?**  
+A: Make sure the generated `RevitGenApplication` class is registered as an `IExternalApplication` in your `.addin` manifest. The generator produces `RevitGenApplication.g.cs` in the `RevitGen.Runtime` namespace; reference it from your manifest file.
+
+**Q: `UsingTransaction = false` — when should I use it?**  
+A: Set `UsingTransaction = false` for read-only commands (e.g., selecting elements, showing dialogs, reporting data) that do not modify the Revit model. This avoids the overhead of starting an unnecessary transaction.
+
+**Q: How do I load an icon for my button?**  
+A: Two approaches are supported:
+- **Embedded file** – set `Icon` to a relative file path with an extension, e.g. `Icon = "Resources/MyIcon.png"`, and mark the file as an *Embedded Resource* in your project.
+- **ResX resource** – add the image to a `.resx` file and set `Icon` to the resource name (no extension), e.g. `Icon = nameof(Resources.MyIcon)`.
+
+---
+
 ## Contributing / 贡献指南
 
 1. Fork the repository and create a feature branch from `main`.

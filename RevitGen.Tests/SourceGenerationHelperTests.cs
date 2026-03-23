@@ -192,7 +192,7 @@ namespace MyAddin
     }
 }");
             var result = SourceGenerationHelper.GenerateCommandPartialClass(classSymbol);
-            Assert.StartsWith("// 错误", result);
+            Assert.StartsWith("// ERROR", result);
         }
 
         // ── GenerateApplicationClass ──────────────────────────────────────────
