@@ -30,11 +30,6 @@ namespace RevitGen.Generator
                     }
                 }
             }
-            //if (syntaxNode is ClassDeclarationSyntax classDeclarationSyntax &&
-            //   classDeclarationSyntax.AttributeLists.Count > 0)
-            //{
-            //    CandidateClasses.Add(classDeclarationSyntax);
-            //}
         }
     }
 }
