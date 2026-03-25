@@ -3,9 +3,9 @@ using Autodesk.Revit.UI;
 
 using RevitGen.Attributes;
 
-using RevitGenTest.Properties;
+using RevitGenDemo.Properties;
 
-namespace RevitGenTest
+namespace RevitGenDemo
 {
     [RevitCommand("我的第一个命令", ToolTip = "这是一个自动生成的酷炫命令！", PanelName = "核心功能", Icon = nameof(Resources.CodeList_32px))]
     public partial class RevitAddin
@@ -30,7 +30,7 @@ namespace RevitGenTest
         }
     }
     [RevitCommand("我的第一个命令", ToolTip = "这是一个自动生成的酷炫命令！", PanelName = "核心功能", Icon = "Resources/CodeList_32px.png")]
-    public partial class RevitAddinX
+    public partial class RevitAddinSample
     {
         [CommandHandler]
         private void Run()
