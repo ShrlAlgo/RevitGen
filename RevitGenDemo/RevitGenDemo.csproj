@@ -11,9 +11,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\CodeList_32px.png">
+    <EmbeddedResource Include="Resources\CodeList_32px.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Data.DataSetExtensions" />
