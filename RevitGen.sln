@@ -5,7 +5,7 @@ VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitGen", "RevitGen\RevitGen.csproj", "{36A67B40-B574-495A-A8EA-ED45B19E2A79}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitGenTest", "RevitGenTest\RevitGenTest.csproj", "{6303F3AA-6ECC-4619-8260-6A87E2BCBD50}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitGenDemo", "RevitGenDemo\RevitGenDemo.csproj", "{6303F3AA-6ECC-4619-8260-6A87E2BCBD50}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitGen.Generator", "RevitGen.Generator\RevitGen.Generator.csproj", "{01D32114-2908-4AEF-A420-DB3D257A6FDD}"
 EndProject
