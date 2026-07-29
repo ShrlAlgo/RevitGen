@@ -32,6 +32,46 @@ namespace RevitGen.Attributes
         public string ToolTip { get; set; } = "";
 
         /// <summary>
+        /// 按钮在面板或按钮组中的排序值。
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// 16 像素小图标资源路径或资源名称。
+        /// </summary>
+        public string SmallIcon { get; set; } = "";
+
+        /// <summary>
+        /// 32 像素大图标资源路径或资源名称；为空时回退到 Icon。
+        /// </summary>
+        public string LargeIcon { get; set; } = "";
+
+        /// <summary>
+        /// 按钮的长说明文本。
+        /// </summary>
+        public string LongDescription { get; set; } = "";
+
+        /// <summary>
+        /// 按钮的在线帮助地址。
+        /// </summary>
+        public string HelpUrl { get; set; } = "";
+
+        /// <summary>
+        /// 是否在按钮前添加分隔线。
+        /// </summary>
+        public bool AddSeparatorBefore { get; set; }
+
+        /// <summary>
+        /// 按钮组名称；为空时生成普通按钮。
+        /// </summary>
+        public string GroupName { get; set; } = "";
+
+        /// <summary>
+        /// 按钮组类型。
+        /// </summary>
+        public RibbonGroupType GroupType { get; set; }
+
+        /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="text">按钮上显示的文本。</param>
@@ -43,7 +83,21 @@ namespace RevitGen.Attributes
             }
             Text = text;
         }
+        /// <summary>
+        /// 是否自动使用 Revit 事务执行命令。
+        /// </summary>
         public bool UsingTransaction { get; set; } = true;
 
+    }
+
+    /// <summary>
+    /// Ribbon 按钮组类型。
+    /// </summary>
+    public enum RibbonGroupType
+    {
+        None,
+        Pulldown,
+        SplitButton,
+        Stacked
     }
 }

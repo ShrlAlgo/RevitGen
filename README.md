@@ -41,7 +41,7 @@ A powerful Roslyn source generator that accelerates Revit add-in development by 
 **Published package:**
 
 ```xml
-<PackageReference Include="RevitGen" Version="1.0.3" />
+<PackageReference Include="RevitGen" Version="2.0.0" />
 ```
 
 ### 2. Decorate Your Command Class / 标记命令类
@@ -50,7 +50,7 @@ A powerful Roslyn source generator that accelerates Revit add-in development by 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using RevitGen.Attributes;
-using RevitGenTest.Properties;
+using RevitGenDemo.Properties;
 
 namespace MyAddin
 {
@@ -112,11 +112,164 @@ namespace MyAddin
 | `Icon` | `string` | `""` | Resource name (no extension) for `.resx`-embedded icons, or relative file path for embedded-resource files. / `.resx` 中的资源名（无扩展名），或嵌入式资源文件的相对路径。 |
 | `ToolTip` | `string` | `""` | Tooltip shown on hover. / 鼠标悬停时显示的提示文字。 |
 | `UsingTransaction` | `bool` | `true` | When `true` (default), the generated `Execute` method wraps the handler in a Revit transaction. Set to `false` for read-only commands. / 为 `true`（默认）时，自动为命令包裹 Revit 事务。只读命令可设为 `false`。 |
+| `Order` | `int` | `0` | Stable order inside a panel or group. / 面板或按钮组内的稳定顺序。 |
+| `SmallIcon` | `string` | `""` | 16px embedded icon. / 16px 嵌入图标。 |
+| `LargeIcon` | `string` | `""` | 32px embedded icon; falls back to `Icon`. / 32px 嵌入图标，为空时回退到 `Icon`。 |
+| `LongDescription` | `string` | `""` | Long button description. / 按钮长说明。 |
+| `HelpUrl` | `string` | `""` | Contextual help URL. / 上下文帮助地址。 |
+| `AddSeparatorBefore` | `bool` | `false` | Adds a separator before a normal button. / 在普通按钮前添加分隔线。 |
+| `GroupName` | `string` | `""` | Commands with the same value form one group. / 同名命令组成按钮组。 |
+| `GroupType` | `RibbonGroupType` | `None` | `Pulldown`, `SplitButton`, or `Stacked`. / 下拉、拆分或堆叠按钮。 |
 
 ### `[CommandHandler]`
 
 Mark exactly **one** parameterless `void` method per class as the command entry point.  
 每个命令类中标记**一个**无参数、返回 `void` 的方法作为命令执行入口。
+
+### `[CommandAvailability]`
+
+Optionally mark one instance method returning `bool`. It may be parameterless or accept one `UIApplication`. The command automatically implements `IExternalCommandAvailability`.
+
+可选标记一个返回 `bool` 的实例方法；方法可以无参数，或接收一个 `UIApplication`。命令会自动实现 `IExternalCommandAvailability`。
+
+```csharp
+[CommandAvailability]
+private bool CanExecute(UIApplication application)
+{
+    return application.ActiveUIDocument != null;
+}
+```
+
+---
+
+## Additional Generators / 其他生成器
+
+### ExternalEvent
+
+```csharp
+[RevitExternalEvent(Name = "Refresh model")]
+public partial class RefreshExternalEvent
+{
+    [ExternalEventHandler]
+    private void Run(UIApplication application) { }
+}
+
+// Must be called from a valid Revit UI context.
+var handler = new RefreshExternalEvent();
+var externalEvent = handler.CreateExternalEvent();
+```
+
+The handler method returns `void` and accepts zero parameters or one `UIApplication`. `ExternalEvent.Create` is never executed from a generated static initializer.
+
+处理方法返回 `void`，接收零个参数或一个 `UIApplication`。生成器不会在静态初始化阶段创建 ExternalEvent。
+
+### Updater
+
+```csharp
+[RevitUpdater("Wall geometry updater", "DC7C2E9A-F242-4DFD-BB0C-52B7E5B0B940")]
+[UpdaterTrigger((int)BuiltInCategory.OST_Walls, RevitChangeType.Geometry)]
+public partial class WallUpdater
+{
+    [UpdaterHandler]
+    private void Run(UpdaterData data) { }
+}
+```
+
+The generated Bootstrap registers and unregisters the updater. Multiple `[UpdaterTrigger]` attributes are supported. An updater without a trigger produces `REVITGEN105` and is not given an implicit whole-model trigger.
+
+Bootstrap 自动注册和注销 Updater。支持多个 `[UpdaterTrigger]`；未配置触发器时给出 `REVITGEN105`，不会隐式监听整个模型。
+
+### Revit events
+
+```csharp
+[RevitEventContainer]
+public partial class ApplicationEvents
+{
+    [RevitEvent(RevitEventKind.Idling)]
+    private void OnIdling(object sender, IdlingEventArgs args) { }
+}
+```
+
+Bootstrap creates one container instance at startup and performs symmetric unsubscribe at shutdown. Supported events are listed by `RevitEventKind`.
+
+Bootstrap 在启动时创建一个事件容器实例，并在关闭时对称取消订阅。支持范围以 `RevitEventKind` 为准。
+
+### DockablePane
+
+```csharp
+[RevitDockablePane("A19756A4-2A3A-4488-A3AF-AE15D8698795", "My Pane")]
+public partial class MyPane : UserControl
+{
+}
+```
+
+The class must derive from a WPF `FrameworkElement` and be constructible without arguments. RevitGen generates `IDockablePaneProvider` and startup registration.
+
+类型必须继承 WPF `FrameworkElement`，并可通过无参数构造。RevitGen 自动生成 `IDockablePaneProvider` 和启动注册代码。
+
+### Extensible Storage
+
+```csharp
+[RevitSchema("31578522-277A-4F10-BAD7-43C68B36AF50", "ComponentData", VendorId = "SZMD")]
+public partial class ComponentData
+{
+    [RevitSchemaField]
+    public string Code { get; set; }
+
+    [RevitSchemaField]
+    public int Version { get; set; }
+}
+
+var entity = data.ToEntity();
+var restored = ComponentData.FromEntity(entity);
+```
+
+The generated `GetOrCreateSchema()` is idempotent. The first release supports Revit simple field types; unit-bearing and map fields are intentionally excluded from the cross-version baseline.
+
+生成的 `GetOrCreateSchema()` 可重复调用。首版覆盖 Revit 简单字段类型；带单位字段和 Map 字段暂不进入跨版本基线。
+
+### Shared parameters
+
+```csharp
+public partial class SharedParameters
+{
+    [RevitSharedParameter(
+        "6DB4557F-69B7-4665-86A7-C821158AC763",
+        "Component code",
+        Categories = new[] { (int)BuiltInCategory.OST_Walls })]
+    public static readonly string ComponentCode = "Component code";
+}
+```
+
+`GetSharedParameterDefinitions()` returns generated metadata. `EnsureSharedParameterBindings(...)` scans `BindingMap` once and binds every missing definition found in the supplied shared-parameter file. It reports missing external definitions instead of modifying the file silently.
+
+`GetSharedParameterDefinitions()` 返回生成的描述表。`EnsureSharedParameterBindings(...)` 只遍历一次 `BindingMap`，批量绑定共享参数文件中已有的缺失定义；不会静默修改共享参数文件。
+
+---
+
+## Revit Version Compatibility / Revit 版本兼容
+
+- RevitGen 2.x uses Roslyn 4.8 and requires Visual Studio 2022 or an equivalent compiler.
+- The generator itself targets `netstandard2.0` and runs only at compile time.
+- `RevitGenDemo` verifies Revit 2020 on .NET Framework.
+- `RevitGenDemo2025` verifies Revit 2025 on .NET 8.
+- Generated code avoids a compile-time `System.Drawing` dependency, so ResX icons work across the runtime boundary.
+
+RevitGen 2.x 使用 Roslyn 4.8，需要 Visual Studio 2022 或等价编译器。生成器本身仍为 `netstandard2.0` 且只在编译期运行；仓库分别使用 Revit 2020 与 Revit 2025 Demo 验证 .NET Framework 和 .NET 8。
+
+---
+
+## Generated Bootstrap / 生成的启动入口
+
+The default manifest entry remains `RevitGen.Runtime.RevitGenApplication`. Existing projects do not need to change it. Projects with their own `IExternalApplication` can call:
+
+默认清单入口仍为 `RevitGen.Runtime.RevitGenApplication`，旧项目无需修改。已有自定义 `IExternalApplication` 的项目可调用：
+
+```csharp
+return RevitGen.Runtime.RevitGenBootstrap.Startup(application);
+// and in OnShutdown:
+return RevitGen.Runtime.RevitGenBootstrap.Shutdown(application);
+```
 
 ---
 

@@ -120,7 +120,7 @@ namespace MyAddin
     }
 }");
             var result = SourceGenerationHelper.GenerateCommandPartialClass(classSymbol);
-            Assert.Contains("[Transaction(TransactionMode.Manual)]", result);
+            Assert.Contains("[global::Autodesk.Revit.Attributes.Transaction(global::Autodesk.Revit.Attributes.TransactionMode.Manual)]", result);
         }
 
         [Fact]
@@ -138,8 +138,8 @@ namespace MyAddin
     }
 }");
             var result = SourceGenerationHelper.GenerateCommandPartialClass(classSymbol);
-            Assert.Contains("new Transaction(", result);
-            Assert.Contains("trans.Start()", result);
+            Assert.Contains("new global::Autodesk.Revit.DB.Transaction(", result);
+            Assert.Contains("transaction.Start()", result);
         }
 
         [Fact]

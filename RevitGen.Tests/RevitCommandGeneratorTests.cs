@@ -142,7 +142,7 @@ namespace MyAddin
             var content = files["MyCmd.g.cs"];
 
             Assert.Contains("IExternalCommand", content);
-            Assert.Contains("public Result Execute(", content);
+            Assert.Contains("public global::Autodesk.Revit.UI.Result Execute(", content);
         }
 
         [Fact]
@@ -187,9 +187,9 @@ namespace MyAddin
             var files = RunGenerator(source);
             var content = files["MyCmd.g.cs"];
 
-            Assert.Contains("new Transaction(", content);
-            Assert.Contains("trans.Start()", content);
-            Assert.Contains("trans.Commit()", content);
+            Assert.Contains("new global::Autodesk.Revit.DB.Transaction(", content);
+            Assert.Contains("transaction.Start()", content);
+            Assert.Contains("transaction.Commit()", content);
         }
 
         [Fact]
@@ -231,7 +231,7 @@ namespace MyAddin
             var content = files["MyCmd.g.cs"];
 
             // Default is true, so transaction wrapper should be present
-            Assert.Contains("new Transaction(", content);
+            Assert.Contains("new global::Autodesk.Revit.DB.Transaction(", content);
         }
 
         // ── Application class content ─────────────────────────────────────────
@@ -451,6 +451,30 @@ namespace Autodesk.Revit.UI
         Result Execute(ExternalCommandData commandData, ref string message, Autodesk.Revit.DB.ElementSet elements);
     }
 }
+namespace Autodesk.Revit.UI
+{
+    public class UIControlledApplication
+    {
+        public void CreateRibbonTab(string tabName) { }
+        public RibbonPanel CreateRibbonPanel(string tabName, string panelName) => new RibbonPanel();
+        public RibbonPanel CreateRibbonPanel(string panelName) => new RibbonPanel();
+    }
+    public class RibbonPanel
+    {
+        public void AddItem(object item) { }
+    }
+    public class PushButtonData
+    {
+        public PushButtonData(string name, string text, string assemblyPath, string className) { }
+        public string ToolTip { get; set; }
+        public object LargeImage { get; set; }
+    }
+    public interface IExternalApplication
+    {
+        Result OnStartup(UIControlledApplication app);
+        Result OnShutdown(UIControlledApplication app);
+    }
+}
 namespace Autodesk.Revit.Attributes
 {
     public enum TransactionMode { Manual, Automatic }
@@ -458,6 +482,50 @@ namespace Autodesk.Revit.Attributes
     public sealed class TransactionAttribute : System.Attribute
     {
         public TransactionAttribute(TransactionMode mode) { }
+    }
+}";
+
+        /// <summary>
+        /// Minimal stubs for WPF and System.Drawing types referenced by the generated
+        /// <c>RevitGenApplication</c> class.
+        /// </summary>
+        private const string WpfAndDrawingStubs = @"
+namespace System.Windows.Media
+{
+    public class BitmapSource { }
+}
+namespace System.Windows.Media.Imaging
+{
+    public enum BitmapCacheOption { OnLoad, OnDemand, None }
+    public class BitmapImage : System.Windows.Media.BitmapSource
+    {
+        public void BeginInit() { }
+        public void EndInit() { }
+        public System.IO.Stream StreamSource { get; set; }
+        public BitmapCacheOption CacheOption { get; set; }
+        public void Freeze() { }
+    }
+}
+namespace System.Drawing
+{
+    public class Bitmap
+    {
+        public void Save(System.IO.Stream stream, System.Drawing.Imaging.ImageFormat format) { }
+    }
+}
+namespace System.Drawing.Imaging
+{
+    public class ImageFormat
+    {
+        public static ImageFormat Png => new ImageFormat();
+    }
+}
+namespace System.Resources
+{
+    public class ResourceManager
+    {
+        public ResourceManager(string resourceName, System.Reflection.Assembly assembly) { }
+        public object GetObject(string name) => null;
     }
 }";
 
@@ -552,6 +620,46 @@ namespace MyAddin
 
             var errors = CompileSources(generatedPartialClass, userPartialClass, RevitApiStubs);
 
+            Assert.Empty(errors);
+        }
+
+        [Fact]
+        public void GeneratedApplicationClass_CompilesWithoutErrors_WithStubs()
+        {
+            // Arrange – run the generator to obtain both generated files.
+            var userSource = @"
+using RevitGen.Attributes;
+namespace MyAddin
+{
+    [RevitCommand(""Test"", TabName = ""MyTab"", PanelName = ""MyPanel"", ToolTip = ""My tip"", Icon = ""Resources/icon.png"")]
+    public partial class MyCmd
+    {
+        [CommandHandler]
+        private void Run() { }
+    }
+}";
+            var files = RunGenerator(userSource);
+            var generatedAppClass = files["RevitGenApplication.g.cs"];
+            var generatedPartialClass = files["MyCmd.g.cs"];
+
+            var userPartialClass = @"
+namespace MyAddin
+{
+    public partial class MyCmd
+    {
+        private void Run() { }
+    }
+}";
+
+            // Act – compile all generated code + user code + stubs.
+            var errors = CompileSources(
+                generatedAppClass,
+                generatedPartialClass,
+                userPartialClass,
+                RevitApiStubs,
+                WpfAndDrawingStubs);
+
+            // Assert – no compilation errors.
             Assert.Empty(errors);
         }
     }

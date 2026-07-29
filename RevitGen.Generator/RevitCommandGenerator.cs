@@ -7,11 +7,21 @@ using System.Text;
 
 namespace RevitGen.Generator
 {
-    [Generator(LanguageNames.CSharp)]
+    // 保留旧入口供 1.x 兼容测试使用；2.x 实际入口为 RevitIncrementalGenerator。
     public class RevitCommandGenerator : ISourceGenerator
     {
         private const string RevitCommandAttributeFullName = "RevitGen.Attributes.RevitCommandAttribute";
         private const string CommandHandlerAttributeFullName = "RevitGen.Attributes.CommandHandlerAttribute";
+
+#pragma warning disable RS2008 // Enable release tracking for analyzer rules
+        private static readonly DiagnosticDescriptor NoHandlerMethodRule = new DiagnosticDescriptor(
+            id: "REVITGEN001",
+            title: "Missing CommandHandler method",
+            messageFormat: "Class '{0}' must have a parameterless void method marked with [CommandHandler]",
+            category: "RevitGen",
+            DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+#pragma warning restore RS2008
 
         public void Initialize(GeneratorInitializationContext context)
         {
@@ -20,6 +30,8 @@ namespace RevitGen.Generator
 
         public void Execute(GeneratorExecutionContext context)
         {
+            if (context.CancellationToken.IsCancellationRequested) return;
+
             var log = new StringBuilder();
             log.AppendLine("// RevitGen Log:");
             log.AppendLine($"// Compilation assembly: {context.Compilation.AssemblyName}");
@@ -59,6 +71,8 @@ namespace RevitGen.Generator
             var commandClasses = new List<INamedTypeSymbol>();
             foreach (var candidateClass in receiver.CandidateClasses)
             {
+                if (context.CancellationToken.IsCancellationRequested) return;
+
                 log.AppendLine($"// -> Processing candidate: {candidateClass.Identifier.ValueText}");
                 var model = context.Compilation.GetSemanticModel(candidateClass.SyntaxTree);
                 var classSymbol = model.GetDeclaredSymbol(candidateClass) as INamedTypeSymbol;
@@ -87,16 +101,31 @@ namespace RevitGen.Generator
 
             if (commandClasses.Any())
             {
+                var validCommandClasses = new List<INamedTypeSymbol>();
                 foreach (var classSymbol in commandClasses)
                 {
+                    if (context.CancellationToken.IsCancellationRequested) return;
+
                     var partialClassSource = SourceGenerationHelper.GenerateCommandPartialClass(classSymbol);
+                    if (partialClassSource.StartsWith("// ERROR"))
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            NoHandlerMethodRule, classSymbol.Locations.FirstOrDefault(), classSymbol.Name));
+                        log.AppendLine($"//    -> SKIPPED: {classSymbol.Name} has no valid [CommandHandler] method.");
+                        continue;
+                    }
+
+                    validCommandClasses.Add(classSymbol);
                     AddSource(context, $"{classSymbol.Name}.g.cs", partialClassSource);
                     log.AppendLine($"// Generated: {classSymbol.Name}.g.cs");
                 }
 
-                var appSource = SourceGenerationHelper.GenerateApplicationClass(commandClasses);
-                AddSource(context, "RevitGenApplication.g.cs", appSource);
-                log.AppendLine("// Generated: RevitGenApplication.g.cs");
+                if (validCommandClasses.Any())
+                {
+                    var appSource = SourceGenerationHelper.GenerateApplicationClass(validCommandClasses);
+                    AddSource(context, "RevitGenApplication.g.cs", appSource);
+                    log.AppendLine("// Generated: RevitGenApplication.g.cs");
+                }
             }
 
             AddSource(context, "RevitGen_Debug_Log.g.cs", log.ToString());
