@@ -1,0 +1,133 @@
+name: Publish RevitGen
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version, for example 2.0.0
+        required: true
+        type: string
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          if ($env:GITHUB_REF_TYPE -eq 'tag') {
+            $releaseTag = $env:GITHUB_REF_NAME
+            $packageVersion = $releaseTag.TrimStart('v', 'V')
+          }
+          else {
+            $packageVersion = $env:REQUESTED_VERSION.Trim().TrimStart('v', 'V')
+            $releaseTag = "v$packageVersion"
+          }
+
+          if ($packageVersion -notmatch '^\d+\.\d+\.\d+(?:\.\d+)?(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$') {
+            throw "版本号格式无效：$packageVersion"
+          }
+
+          "package_version=$packageVersion" >> $env:GITHUB_OUTPUT
+          "release_tag=$releaseTag" >> $env:GITHUB_OUTPUT
+
+      - name: Test
+        shell: pwsh
+        run: dotnet test .\RevitGen.Tests\RevitGen.Tests.csproj --configuration Release --nologo
+
+      - name: Pack
+        id: pack
+        shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.package_version }}
+        run: |
+          dotnet pack .\RevitGen\RevitGen.csproj `
+            --configuration Release `
+            --output .\artifacts `
+            --nologo `
+            -p:PackageVersion=$env:PACKAGE_VERSION `
+            -p:ContinuousIntegrationBuild=true
+          if ($LASTEXITCODE -ne 0) {
+            throw "NuGet 打包失败，退出代码：$LASTEXITCODE"
+          }
+
+          $package = Join-Path $PWD "artifacts\RevitGen.$env:PACKAGE_VERSION.nupkg"
+          if (-not (Test-Path -LiteralPath $package -PathType Leaf)) {
+            throw "未找到 NuGet 包：$package"
+          }
+
+          "package=$package" >> $env:GITHUB_OUTPUT
+
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          name: RevitGen-${{ steps.version.outputs.package_version }}
+          path: ${{ steps.pack.outputs.package }}
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Publish NuGet package
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          PACKAGE_PATH: ${{ steps.pack.outputs.package }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
+            throw '缺少仓库 Secret：NUGET_API_KEY。'
+          }
+
+          dotnet nuget push $env:PACKAGE_PATH `
+            --api-key $env:NUGET_API_KEY `
+            --source https://api.nuget.org/v3/index.json
+          if ($LASTEXITCODE -ne 0) {
+            throw "NuGet 发布失败，退出代码：$LASTEXITCODE"
+          }
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.release_tag }}
+          PACKAGE_PATH: ${{ steps.pack.outputs.package }}
+        run: |
+          $arguments = @(
+            'release'
+            'create'
+            $env:RELEASE_TAG
+            $env:PACKAGE_PATH
+            '--repo'
+            $env:GITHUB_REPOSITORY
+            '--title'
+            $env:RELEASE_TAG
+            '--generate-notes'
+          )
+
+          if ($env:GITHUB_REF_TYPE -eq 'tag') {
+            $arguments += '--verify-tag'
+          }
+          else {
+            $arguments += @('--target', $env:GITHUB_SHA)
+          }
+
+          & gh @arguments
+          if ($LASTEXITCODE -ne 0) {
+            throw "GitHub Release 发布失败，退出代码：$LASTEXITCODE"
+          }
