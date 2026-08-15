@@ -46,8 +46,8 @@
   <!-- Release 包生成成功后清理当前版本的本地 NuGet 缓存。 -->
   <Target Name="ClearRevitGenNuGetPackageCache"
           AfterTargets="Pack"
-          Condition="'$(Configuration)' == 'Release' and Exists('$(NuGetPackageRoot)revitgen\$(Version)')">
-    <RemoveDir Directories="$(NuGetPackageRoot)revitgen\$(Version)" />
+          Condition="'$(Configuration)' == 'Release' and Exists('$(NuGetPackageRoot)revitgen\$(PackageVersion)')">
+    <RemoveDir Directories="$(NuGetPackageRoot)revitgen\$(PackageVersion)" />
   </Target>
 
 </Project>

@@ -49,6 +49,10 @@ jobs:
           "package_version=$packageVersion" >> $env:GITHUB_OUTPUT
           "release_tag=$releaseTag" >> $env:GITHUB_OUTPUT
 
+      - name: Prepare local package source
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path .\RevitGen\bin\Release -Force | Out-Null
+
       - name: Test
         shell: pwsh
         run: dotnet test .\RevitGen.Tests\RevitGen.Tests.csproj --configuration Release --nologo
