@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   publish:
@@ -88,14 +89,20 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
+      - name: NuGet login
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
       - name: Publish NuGet package
         shell: pwsh
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
           PACKAGE_PATH: ${{ steps.pack.outputs.package }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
-            throw '缺少仓库 Secret：NUGET_API_KEY。'
+            throw 'NuGet OIDC 登录未返回临时 API Key。'
           }
 
           dotnet nuget push $env:PACKAGE_PATH `
