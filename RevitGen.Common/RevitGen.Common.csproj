@@ -5,6 +5,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
         <!-- 在这里添加或修改 NoWarn 标签 -->
     <NoWarn>$(NoWarn);NU1701</NoWarn>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
 </Project>

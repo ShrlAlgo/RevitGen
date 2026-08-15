@@ -17,9 +17,12 @@
     <!-- 关键设置 -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-    <!-- 将此包标记为纯开发时依赖 -->
-    <DevelopmentDependency>true</DevelopmentDependency>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,9 +32,6 @@
     <!-- 2. 将 Generator.dll 打包到 analyzers/ 目录 -->
     <None Include="..\RevitGen.Generator\bin\$(Configuration)\netstandard2.0\RevitGen.Generator.dll" Pack="true" PackagePath="analyzers\dotnet\cs" />
     
-    <!-- 3. 将新创建的 .targets 文件打包到 build/ 目录 -->
-    <None Include="build\RevitGen.targets" Pack="true" PackagePath="build" />
-
     <None Include="..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\LICENSE" Pack="true" PackagePath="\" />
 
@@ -42,5 +42,12 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
+
+  <!-- Release 包生成成功后清理当前版本的本地 NuGet 缓存。 -->
+  <Target Name="ClearRevitGenNuGetPackageCache"
+          AfterTargets="Pack"
+          Condition="'$(Configuration)' == 'Release' and Exists('$(NuGetPackageRoot)revitgen\$(Version)')">
+    <RemoveDir Directories="$(NuGetPackageRoot)revitgen\$(Version)" />
+  </Target>
 
 </Project>

@@ -77,6 +77,7 @@ namespace RevitGenDemo
         public int[] RelatedElementIds { get; set; } = new int[0];
     }
 
+#if NETFRAMEWORK
     /// <summary>
     /// 演示共享参数描述和批量绑定辅助方法。
     /// </summary>
@@ -88,4 +89,5 @@ namespace RevitGenDemo
             Categories = new[] { (int)BuiltInCategory.OST_Walls })]
         public static readonly string ComponentCode = "构件编码";
     }
+#endif
 }
